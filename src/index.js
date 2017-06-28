@@ -12,6 +12,7 @@ app.get('/take', PlayerController.take);
 
 // Tournament
 app.get('/announceTournament', TournamentController.announce);
+app.get('/joinTournament', TournamentController.join);
 
 // App
 app.get('/reset', AppController.flush);

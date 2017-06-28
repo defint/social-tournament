@@ -40,4 +40,26 @@ module.exports = class TournamentController {
     }).catch(error => res.status(500).json({ error }));
   }
 
+  static join(req, res) {
+    if(TournamentController.validateTournament(req, res)) return;
+    if(PlayerController.validatePlayer(req, res)) return;
+
+    const tournamentId = req.query.tournamentId;
+    const playerId = req.query.playerId;
+    let backers = [];
+    const backerIds = req.query.backerId;
+
+    if(Array.isArray(backerIds)) {
+      backers = backerIds.filter(item => item);
+    } else {
+      if(backerIds) {
+        backers.push(backerIds);
+      }
+    }
+
+    const tournament = new TournamentModel(tournamentId);
+    tournament.join(playerId,backers).then(() => {
+      res.send('ok');
+    }).catch(error => res.status(500).json({ error }));
+  }
 };

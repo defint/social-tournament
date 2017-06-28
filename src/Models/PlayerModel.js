@@ -28,6 +28,27 @@ module.exports = class PlayerModel {
     });
   }
 
+  pointsCan(points) {
+    return new Promise((resolve,reject) => {
+      redisClient.get(this._keyPoints(),(err, reply) => {
+        if(err) {
+          reject(err);
+        } else {
+          const pointsOld = parseInt(reply);
+          if(pointsOld || pointsOld===0) {
+            if(pointsOld >= points) {
+              resolve();
+            } else {
+              reject(`Player ${this._playerId} does not have enough points.`);
+            }
+          } else {
+            reject(`Player ${this._playerId} does not exist.`);
+          }
+        }
+      });
+    });
+  }
+
   fund(points) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPoints(),(err, reply) => {
@@ -53,7 +74,7 @@ module.exports = class PlayerModel {
             if(rest >= 0) {
               redisClient.set(this._keyPoints(), rest,resolve);
             } else {
-              reject('User does not have enough points.');
+              reject('Player does not have enough points.');
             }
           } else {
             reject('Player does not exist.');
