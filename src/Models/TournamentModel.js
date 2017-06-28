@@ -8,26 +8,62 @@ module.exports = class TournamentModel {
     this._tournamentId = tournamentId;
   }
 
+  /**
+   * Returns key for the store to getting deposit.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyDeposit() {
     return `tournaments:${this._tournamentId}:deposit`;
   }
 
+  /**
+   * Returns key for the store to getting player.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyPlayer(playerId) {
     return `tournaments:${this._tournamentId}:player:${playerId}`;
   }
 
+  /**
+   * Returns key for the store to getting backer.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyBacker(playerId,backerId) {
     return this._keyPlayer(playerId)+`:backer:${backerId}`;
   }
 
+  /**
+   * Returns key for the store to getting all backers.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyBackerAll(playerId) {
     return this._keyPlayer(playerId)+`:backer:*`;
   }
 
+  /**
+   * Returns key for the store to getting end of tournament.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyEnd() {
     return `tournaments:${this._tournamentId}:end`;
   }
 
+  /**
+   * Checks player exists on the tournament.
+   *
+   * @param playerId
+   * @returns {Promise}
+   */
   checkExistPlayer(playerId) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPlayer(playerId),(err, reply) => {
@@ -44,6 +80,11 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Check tournament already exists.
+   *
+   * @returns {Promise}
+   */
   checkExist() {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyDeposit(),(err, reply) => {
@@ -66,6 +107,12 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Announces tournament.
+   *
+   * @param deposit
+   * @returns {Promise}
+   */
   announce(deposit) {
     return new Promise((resolve,reject) => {
       this.checkExist().then((exist) => {
@@ -78,6 +125,13 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Joins player to the tournament.
+   *
+   * @param playerId
+   * @param backers
+   * @returns {Promise}
+   */
   join(playerId,backers) {
     return new Promise((resolve,reject) => {
       this.checkExist().then((exist) => {
@@ -121,6 +175,13 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Funds prize.
+   *
+   * @param key
+   * @param prize
+   * @returns {Promise}
+   */
   fundPrize(key,prize) {
     return new Promise((resolve,reject) => {
       redisClient.get(key,(err, reply) => {
@@ -134,6 +195,13 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Funds money for all backers.
+   *
+   * @param playerId
+   * @param prize
+   * @returns {Promise}
+   */
   win(playerId,prize) {
     return new Promise((resolve,reject) => {
       redisClient.keys(this._keyBackerAll(playerId), (err, keys) => {
@@ -158,6 +226,12 @@ module.exports = class TournamentModel {
     });
   }
 
+  /**
+   * Funds money for all winners.
+   *
+   * @param winners
+   * @returns {Promise}
+   */
   result(winners) {
     return new Promise((resolve,reject) => {
       this.checkExist().then((exist) => {

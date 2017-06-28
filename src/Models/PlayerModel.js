@@ -7,10 +7,21 @@ module.exports = class PlayerModel {
     this._playerId = playerId;
   }
 
+  /**
+   * Returns key for the store to getting points.
+   *
+   * @returns {string}
+   * @private
+   */
   _keyPoints() {
     return `players:${this._playerId}:points`;
   }
 
+  /**
+   * Resolves points for the current user.
+   *
+   * @returns {Promise}
+   */
   points() {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPoints(),(err, reply) => {
@@ -28,6 +39,12 @@ module.exports = class PlayerModel {
     });
   }
 
+  /**
+   * Checks current user can take specified amount of points.
+   *
+   * @param points
+   * @returns {Promise}
+   */
   pointsCan(points) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPoints(),(err, reply) => {
@@ -49,6 +66,12 @@ module.exports = class PlayerModel {
     });
   }
 
+  /**
+   * Adds points to the player account.
+   *
+   * @param points
+   * @returns {Promise}
+   */
   fund(points) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPoints(),(err, reply) => {
@@ -62,6 +85,12 @@ module.exports = class PlayerModel {
     });
   }
 
+  /**
+   * Takes points from the player account.
+   *
+   * @param points
+   * @returns {Promise}
+   */
   take(points) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPoints(),(err, reply) => {
