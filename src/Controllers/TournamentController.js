@@ -62,4 +62,34 @@ module.exports = class TournamentController {
       res.send('ok');
     }).catch(error => res.status(500).json({ error }));
   }
+
+  static result(req, res) {
+    const body = req.body;
+    let winners = [];
+
+    if(!body.hasOwnProperty('tournamentId')) {
+      res.status(400).json({ error: 'Tournament ID is empty.'});
+      return;
+    } else if (!body.winners) {
+      res.status(400).json({ error: 'Winners are empty.'});
+      return;
+    } else if(!Array.isArray(body.winners) || body.winners.length === 0) {
+      res.status(400).json({ error: 'Winners invalid.'});
+      return;
+    } else {
+      winners = body.winners.filter(item => {
+        return item.playerId && item.prize;
+      });
+
+      if(!winners) {
+        res.status(400).json({ error: 'Winners invalid.'});
+        return;
+      }
+    }
+
+    const tournament = new TournamentModel(body.tournamentId);
+    tournament.result(winners).then(() => {
+      res.send('ok');
+    }).catch(error => res.status(500).json({ error }));
+  }
 };

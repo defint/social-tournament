@@ -20,13 +20,21 @@ module.exports = class TournamentModel {
     return this._keyPlayer(playerId)+`:backer:${backerId}`;
   }
 
+  _keyBackerAll(playerId) {
+    return this._keyPlayer(playerId)+`:backer:*`;
+  }
+
+  _keyEnd() {
+    return `tournaments:${this._tournamentId}:end`;
+  }
+
   checkExistPlayer(playerId) {
     return new Promise((resolve,reject) => {
       redisClient.get(this._keyPlayer(playerId),(err, reply) => {
         if(err) {
           reject(err);
         } else {
-          if(reply && reply === 'ok') {
+          if(reply) {
             reject('Player already in the tournament.');
           } else {
             resolve();
@@ -84,12 +92,13 @@ module.exports = class TournamentModel {
           Promise.all(promises).then(() => {
             const promisesTake = [];
 
-            redisClient.set(this._keyPlayer(playerId), 'ok');
+            redisClient.set(this._keyPlayer(playerId), playerId);
+            redisClient.set(this._keyBacker(playerId,playerId), playerId);
             const playerModel = new PlayerModel(playerId);
             promisesTake.push(playerModel.take(selfDeposit));
 
             backers.forEach((backerId) => {
-              redisClient.set(this._keyBacker(playerId,backerId), 'ok');
+              redisClient.set(this._keyBacker(playerId,backerId), backerId);
 
               const backerModel = new PlayerModel(backerId);
               promisesTake.push(backerModel.take(selfDeposit));
@@ -99,6 +108,61 @@ module.exports = class TournamentModel {
           }).catch(reject);
         }
       });
+    });
+  }
+
+  fundPrize(key,prize) {
+    return new Promise((resolve,reject) => {
+      redisClient.get(key,(err, reply) => {
+        if(err) {
+          reject(err);
+        } else {
+          const player = new PlayerModel(reply);
+          player.fund(prize).then(resolve);
+        }
+      });
+    });
+  }
+
+  win(playerId,prize) {
+    return new Promise((resolve,reject) => {
+      redisClient.keys(this._keyBackerAll(playerId), (err, keys) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if(keys.length === 0) {
+          reject('Winner does not have any players or backers.');
+          return;
+        }
+
+        const prizeToFund = Math.floor(prize / keys.length);
+
+        const promises = keys.map((item) => {
+          return this.fundPrize(item,prizeToFund);
+        });
+
+        Promise.all(promises).then(resolve);
+      });
+    });
+  }
+
+  result(winners) {
+    return new Promise((resolve,reject) => {
+      this.checkExist().then((exist) => {
+        if(!exist.isExist) {
+          reject('Tournament does not exist.');
+        } else {
+          const promises = winners.map(item => {
+            return this.win(item.playerId,item.prize);
+          });
+
+          Promise.all(promises).then(() => {
+            redisClient.set(this._keyEnd(), 'true',resolve);
+          });
+        }
+      })
     });
   }
 };
