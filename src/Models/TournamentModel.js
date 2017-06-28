@@ -50,9 +50,17 @@ module.exports = class TournamentModel {
         if(err) {
           reject(err);
         } else {
-          const deposit = parseInt(reply) || 0;
-          const isExist = !!deposit;
-          resolve({isExist,deposit});
+          redisClient.get(this._keyEnd(),(errEnd, replyEnd) => {
+            if(errEnd) {
+              reject(errEnd);
+            } else {
+              const deposit = parseInt(reply) || 0;
+              const isExist = !!deposit;
+              const isEnd = !!replyEnd;
+
+              resolve({isExist,deposit,isEnd});
+            }
+          });
         }
       });
     });
@@ -75,6 +83,8 @@ module.exports = class TournamentModel {
       this.checkExist().then((exist) => {
         if(!exist.isExist) {
           reject('Tournament does not exist.');
+        } else if(exist.isEnd) {
+          reject('Tournament has been ended.');
         } else {
 
           // Check all players can join to the tournament.
@@ -153,6 +163,8 @@ module.exports = class TournamentModel {
       this.checkExist().then((exist) => {
         if(!exist.isExist) {
           reject('Tournament does not exist.');
+        } else if(exist.isEnd) {
+          reject('Tournament has been ended.');
         } else {
           const promises = winners.map(item => {
             return this.win(item.playerId,item.prize);
