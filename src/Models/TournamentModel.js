@@ -82,20 +82,20 @@ module.exports = class TournamentModel {
 
           // Funds and add players to the store.
           Promise.all(promises).then(() => {
-            const promisesFund = [];
+            const promisesTake = [];
 
             redisClient.set(this._keyPlayer(playerId), 'ok');
             const playerModel = new PlayerModel(playerId);
-            promisesFund.push(playerModel.take(selfDeposit));
+            promisesTake.push(playerModel.take(selfDeposit));
 
             backers.forEach((backerId) => {
               redisClient.set(this._keyBacker(playerId,backerId), 'ok');
 
               const backerModel = new PlayerModel(backerId);
-              promisesFund.push(backerModel.take(selfDeposit));
+              promisesTake.push(backerModel.take(selfDeposit));
             });
 
-            Promise.all(promisesFund).then(resolve).catch(reject);
+            Promise.all(promisesTake).then(resolve).catch(reject);
           }).catch(reject);
         }
       });
