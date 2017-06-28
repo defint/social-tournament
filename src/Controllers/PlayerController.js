@@ -5,7 +5,7 @@ module.exports = class PlayerController {
     const playerId = req.query.playerId;
 
     if(!playerId) {
-      res.status(400).json({ error: 'PlayerModel ID is empty.'});
+      res.status(400).json({ error: 'Player ID is empty.'});
       return true;
     }
 
