@@ -2,6 +2,7 @@ const PlayerModel = require('./PlayerModel');
 const redis = require('redis');
 
 const redisClient = redis.createClient(6379, 'redis');
+const lock = require("redis-lock")(redisClient);
 
 module.exports = class TournamentModel {
   constructor(tournamentId) {
@@ -234,21 +235,26 @@ module.exports = class TournamentModel {
    */
   result(winners) {
     return new Promise((resolve,reject) => {
-      this.checkExist().then((exist) => {
-        if(!exist.isExist) {
-          reject('Tournament does not exist.');
-        } else if(exist.isEnd) {
-          reject('Tournament has been ended.');
-        } else {
-          const promises = winners.map(item => {
-            return this.win(item.playerId,item.prize);
-          });
+      lock(`PlayerModel:take:${this._playerId}`, (done) => {
+        this.checkExist().then((exist) => {
+          if(!exist.isExist) {
+            reject('Tournament does not exist.');
+          } else if(exist.isEnd) {
+            reject('Tournament has been ended.');
+          } else {
+            const promises = winners.map(item => {
+              return this.win(item.playerId,item.prize);
+            });
 
-          Promise.all(promises).then(() => {
-            redisClient.set(this._keyEnd(), 'true',resolve);
-          });
-        }
-      })
+            Promise.all(promises).then(() => {
+              redisClient.set(this._keyEnd(), 'true',() => {
+                done();
+                resolve();
+              });
+            });
+          }
+        })
+      });
     });
   }
 };
