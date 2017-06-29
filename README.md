@@ -1,5 +1,13 @@
 # Social tournament service
 
+## Dependencies
+
+* NodeJS
+* Express
+* body-parser
+* Redis
+* redis-lock
+
 ## Setup
 
 In terminal:
@@ -10,7 +18,7 @@ npm i
 docker-compose up
 ```
 
-## Test
+## Acceptance test
 
 * http://localhost:3000/reset
 * http://localhost:3000/fund?playerId=P1&points=300 
