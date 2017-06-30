@@ -29,9 +29,8 @@ module.exports = class PlayerModel {
         if(err) {
           reject(err);
         } else {
-          const points = parseInt(reply);
-          if(points || points===0) {
-            resolve(points);
+          if(reply !== null) {
+            resolve(reply);
           } else {
             reject('Player does not exist.');
           }
@@ -52,9 +51,8 @@ module.exports = class PlayerModel {
         if(err) {
           reject(err);
         } else {
-          const pointsOld = parseInt(reply);
-          if(pointsOld || pointsOld===0) {
-            if(pointsOld >= points) {
+          if(reply !== null) {
+            if(parseFloat(reply) >= parseFloat(points)) {
               resolve();
             } else {
               reject(`Player ${this._playerId} does not have enough points.`);
@@ -80,8 +78,8 @@ module.exports = class PlayerModel {
           if(err) {
             reject(err);
           } else {
-            const old = parseInt(reply) || 0;
-            redisClient.set(this._keyPoints(), parseInt(old) + parseInt(points),() => {
+            const old = parseFloat(reply) || 0;
+            redisClient.set(this._keyPoints(), old + parseFloat(points),() => {
               done();
               resolve();
             });
@@ -104,9 +102,8 @@ module.exports = class PlayerModel {
           if(err) {
             reject(err);
           } else {
-            const pointsOld = parseInt(reply);
-            if(pointsOld || pointsOld===0) {
-              const rest = pointsOld - parseInt(points);
+            if(reply !== null) {
+              const rest = parseFloat(reply) - parseFloat(points);
               if(rest >= 0) {
                 redisClient.set(this._keyPoints(), rest,() => {
                   done();

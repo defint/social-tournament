@@ -19,7 +19,7 @@ module.exports = class TournamentController {
     if(!deposit) {
       res.status(400).json({ error: 'Amount of points is empty.'});
       return true;
-    } else if(!parseInt(deposit) || parseInt(deposit) < 0) {
+    } else if(parseFloat(deposit) < 0) {
       res.status(400).json({ error: 'Invalid amount of points.'});
       return true;
     }

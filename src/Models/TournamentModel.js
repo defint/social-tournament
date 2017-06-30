@@ -96,7 +96,7 @@ module.exports = class TournamentModel {
             if(errEnd) {
               reject(errEnd);
             } else {
-              const deposit = parseInt(reply) || 0;
+              const deposit = parseFloat(reply);
               const isExist = !!deposit;
               const isEnd = !!replyEnd;
 
@@ -120,7 +120,7 @@ module.exports = class TournamentModel {
         if(exist.isExist) {
           reject('Tournament already exists.');
         } else {
-          redisClient.set(this._keyDeposit(), parseInt(deposit),resolve);
+          redisClient.set(this._keyDeposit(), parseFloat(deposit),resolve);
         }
       });
     });
@@ -144,7 +144,7 @@ module.exports = class TournamentModel {
 
           // Check all players can join to the tournament.
           const players = backers.concat([playerId]);
-          const selfDeposit = Math.ceil(exist.deposit / players.length);
+          const selfDeposit = Math.round(exist.deposit / players.length * 100) / 100;
           const promises = players.map(player => {
             const playerModel = new PlayerModel(player);
             return playerModel.pointsCan(selfDeposit);
@@ -216,7 +216,7 @@ module.exports = class TournamentModel {
           return;
         }
 
-        const prizeToFund = Math.floor(prize / keys.length);
+        const prizeToFund = Math.round(prize / keys.length * 100) / 100;
 
         const promises = keys.map((item) => {
           return this.fundPrize(item,prizeToFund);

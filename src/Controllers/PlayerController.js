@@ -35,7 +35,7 @@ module.exports = class PlayerController {
     player.points().then((points) => {
       res.json({
         'playerId': playerId,
-        'balance': points
+        'balance': Number(parseFloat(points).toFixed(2))
       });
     }).catch(error => res.status(500).json({ error }));
   }
