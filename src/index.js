@@ -7,6 +7,7 @@ const AppController = require('./Controllers/AppController');
 const app = express();
 
 app.use(bodyParser.json());
+app.disable('etag');
 
 // Player
 app.get('/balance', PlayerController.balance);
