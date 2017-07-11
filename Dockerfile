@@ -1,11 +1,12 @@
 FROM node:alpine
 
-ADD package.json /tmp/package.json
-RUN cd /tmp && npm install
-RUN mkdir -p /opt/app && cp -a /tmp/node_modules /opt/app/
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-WORKDIR /opt/app
-ADD . /opt/app
+COPY package.json /usr/src/app/
+RUN npm install
+
+COPY ./src /usr/src/app/src
 
 EXPOSE 3000
 

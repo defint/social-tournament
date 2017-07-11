@@ -5,7 +5,7 @@ services:
     ports:
      - "3000:3000"
     volumes:
-     - .:/opt/app
+     - .:/usr/src/app
     depends_on:
      - "redis"
   redis:
